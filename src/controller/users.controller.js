@@ -62,9 +62,15 @@ export const update = async (req, res, next)=>{
     if(userCheck.rows.length === 0){
      return res.status(404).json({message: "User Not found"})
     }
-   
+    const {value, error} = userValidationUpdate(req.body);
+    const info = value
+    if (error) {
+      console.log("Validation xato:", error.details[0].message);
+      return res.status(422).send(error.details[0].message);
+    }
+
     const allowedFields = ["name", "password"];
-      for(const [key, value] of Object.entries(req.body)){
+      for(const [key, value] of Object.entries(info)){
         if(allowedFields.includes(key)){
         fields.push(`${key}=$${idx}`);
         values.push(value);
@@ -82,3 +88,20 @@ export const update = async (req, res, next)=>{
     next(err);
   }
 }
+
+
+export const deleteBoard = async(req, res, next) => {
+    try{
+        const {id} = req.params;
+    const boardCheck = await pool.query(`Select * from boards where id = $1;`, [id])
+     if(boardCheck.rows.length === 0){
+        return res.status(404).json({message: "board Not found"})
+     }
+     const deleted = await pool.query(`Delete from boards where id = $1;`, [id])
+     res.send({message: "Board deleted succesfully", deleted});
+    }catch(err){
+        console.log(err);
+        next(err);
+    }
+}
+

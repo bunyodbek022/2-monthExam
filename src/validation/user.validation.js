@@ -19,3 +19,4 @@ export function userValidationUpdate(data) {
 
   return schema.validate(data, { abortEarly: true });
 }
+
