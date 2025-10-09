@@ -1,10 +1,9 @@
 import pool from "../config/config.js";
-import { userValidation } from "../validation/user.validation.js";
+import { userValidation, userValidationUpdate } from "../validation/user.validation.js";
 import bcrypt from "bcrypt";
 
-export const createUser = async (req, res) => {
+export const createUser = async (req, res, next) => {
   try {
-    console.log("req.body keldi:", req.body);
     const { value, error } = userValidation(req.body);
 
     if (error) {
@@ -25,11 +24,11 @@ export const createUser = async (req, res) => {
     return res.status(201).send({ message: "User yaratildi" });
   } catch (err) {
     console.log("Xato:", err);
-    res.json({ message: "Database error" });
+    next(err)
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -43,12 +42,43 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch)
-      return res.status(401).send({ message: "Parol noto‘g‘ri" });
+      return res.status(401).send({ message: "Parol noto'g'ri" });
 
     console.log("✅Login muvaffaqiyatli:", user.email);
     res.send({ message: "Login successful", user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.log("Xato:", err);
-    res.json({ message: "Database error" });
+    next(err)
   }
 };
+
+export const update = async (req, res, next)=>{
+  try{
+    const {id} = req.params
+    const fields = []
+    const values = []
+    let idx = 1
+    const userCheck = await pool.query(`Select * from users where id = $1`, [id])
+    if(userCheck.rows.length === 0){
+     return res.status(404).json({message: "User Not found"})
+    }
+   
+    const allowedFields = ["name", "password"];
+      for(const [key, value] of Object.entries(req.body)){
+        if(allowedFields.includes(key)){
+        fields.push(`${key}=$${idx}`);
+        values.push(value);
+        idx++;
+      }  
+    }
+     if (fields.length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }  
+    values.push(id)
+    const updatedUser = await pool.query(`Update users SET ${fields.join(", ")} where id = $${idx} Returning *`, values)
+    res.send({message: "User succesfully updated", user: updatedUser.rows[0]})
+  }catch(err){
+    console.log("Xato:", err);
+    next(err);
+  }
+}
