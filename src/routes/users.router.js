@@ -3,11 +3,10 @@ import { login, createUser, update } from "../controller/users.controller.js";
 
 const userRouter = Router();
 
-
 userRouter.post("/register", createUser);
 
 userRouter.post("/login", login);
 
-userRouter.post("/update/:id", update);
+userRouter.put("/update/:id", update);
 
 export default userRouter;

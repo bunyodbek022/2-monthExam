@@ -1,13 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
-import userRouter from "./src/routes/users.router.js";
+import {userRouter, boardRouter} from "./src/routes/index.js";
 
 dotenv.config();
 const app = express();
-
 app.use(express.json());
 
 app.use("/user", userRouter);
+
+app.use("/board", boardRouter);
 
 app.use((err, req, res, next) => {
   console.error("Global error handler:", err.message);

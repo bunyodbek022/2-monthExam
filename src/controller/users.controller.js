@@ -62,9 +62,15 @@ export const update = async (req, res, next)=>{
     if(userCheck.rows.length === 0){
      return res.status(404).json({message: "User Not found"})
     }
-   
+    const {value, error} = userValidationUpdate(req.body);
+    const info = value
+    if (error) {
+      console.log("Validation xato:", error.details[0].message);
+      return res.status(422).send(error.details[0].message);
+    }
+
     const allowedFields = ["name", "password"];
-      for(const [key, value] of Object.entries(req.body)){
+      for(const [key, value] of Object.entries(info)){
         if(allowedFields.includes(key)){
         fields.push(`${key}=$${idx}`);
         values.push(value);
