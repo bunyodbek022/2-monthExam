@@ -88,3 +88,20 @@ export const update = async (req, res, next)=>{
     next(err);
   }
 }
+
+
+export const deleteBoard = async(req, res, next) => {
+    try{
+        const {id} = req.params;
+    const boardCheck = await pool.query(`Select * from boards where id = $1;`, [id])
+     if(boardCheck.rows.length === 0){
+        return res.status(404).json({message: "board Not found"})
+     }
+     const deleted = await pool.query(`Delete from boards where id = $1;`, [id])
+     res.send({message: "Board deleted succesfully", deleted});
+    }catch(err){
+        console.log(err);
+        next(err);
+    }
+}
+
