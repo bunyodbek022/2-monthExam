@@ -29,7 +29,7 @@ CREATE TABLE columns (
 
 CREATE TABLE tasks (
     id UUID PRIMARY KEY ,
-    title VARCHAR(255) NOT NULL 
+    title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     board_id UUID REFERENCES boards(id) ON DELETE CASCADE,
