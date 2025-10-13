@@ -16,7 +16,7 @@ class CRUD {
     }
     // GET
     async get(tableName) {
-        const result = await pool.query(`SELECT * FROM $1`, [tableName]);
+        const result = await pool.query(`SELECT * FROM ${tableName}`);
         return result.rows;
     }
     // UPDATE
@@ -48,7 +48,7 @@ class CRUD {
             return 404;
         }
         const deleted = await pool.query(`Delete from ${tableName} where id = $1 RETURNING *;`, [id])
-        return deleted;
+        return deleted.rows[0];
     }
 
     async search(queryKeys,queryValues, name ) {
@@ -61,7 +61,7 @@ class CRUD {
     }
 
     async paginate(tableName, limit, offset) {
-        const paginated = await pool.query(`Select * from $1 order by id limit $2 offset $3`, [tableName, limit, offset]);
+        const paginated = await pool.query(`Select * from ${tableName} order by id limit $1 offset $2`, [limit, offset]);
         return paginated.rows;
 
     }
