@@ -1,12 +1,20 @@
 import { Router } from "express";
-import { login, createUser, update } from "../controller/users.controller.js";
+import { login, createUser, update, deleteUser, search, getAllUsers} from "../controller/users.controller.js";
+import { userCreateSchema, userUpdateSchema } from "../validation/user.validation.js";
+import { validate } from "../validation/validation.js";
 
 const userRouter = Router();
-
-userRouter.post("/register", createUser);
-
+//SEARCH
+userRouter.get("/search", search);
+//GET_ALL
+userRouter.get("/", getAllUsers);
+// REGISTER
+userRouter.post("/register", validate(userCreateSchema, "body"), createUser);
+//LOGIN
 userRouter.post("/login", login);
-
-userRouter.put("/update/:id", update);
+// UPDATE
+userRouter.put("/update/:id", validate(userUpdateSchema, "body"), update);
+// DELETE 
+userRouter.delete("/:id", deleteUser);
 
 export default userRouter;

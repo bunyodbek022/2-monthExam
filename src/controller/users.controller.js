@@ -1,17 +1,11 @@
 import pool from "../config/config.js";
-import { userValidation, userValidationUpdate } from "../validation/user.validation.js";
+import { Crud } from "../helpers/CrudClass.js";
 import bcrypt from "bcrypt";
 
+// CREATE
 export const createUser = async (req, res, next) => {
   try {
-    const { value, error } = userValidation(req.body);
-
-    if (error) {
-      console.log("Validation xato:", error.details[0].message);
-      return res.status(422).send(error.details[0].message);
-    }
-
-    const { name, email, password } = value;
+    const { name, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -28,6 +22,7 @@ export const createUser = async (req, res, next) => {
   }
 };
 
+// GET_USER
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -44,7 +39,7 @@ export const login = async (req, res, next) => {
     if (!isMatch)
       return res.status(401).send({ message: "Parol noto'g'ri" });
 
-    console.log("✅Login muvaffaqiyatli:", user.email);
+    console.log("Login muvaffaqiyatli:", user.email);
     res.send({ message: "Login successful", user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.log("Xato:", err);
@@ -52,56 +47,82 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const update = async (req, res, next)=>{
-  try{
-    const {id} = req.params
-    const fields = []
-    const values = []
-    let idx = 1
-    const userCheck = await pool.query(`Select * from users where id = $1`, [id])
-    if(userCheck.rows.length === 0){
-     return res.status(404).json({message: "User Not found"})
-    }
-    const {value, error} = userValidationUpdate(req.body);
-    const info = value
-    if (error) {
-      console.log("Validation xato:", error.details[0].message);
-      return res.status(422).send(error.details[0].message);
-    }
+//GET ALL USERS
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    const allowedFields = ["name", "password"];
-      for(const [key, value] of Object.entries(info)){
-        if(allowedFields.includes(key)){
-        fields.push(`${key}=$${idx}`);
-        values.push(value);
-        idx++;
-      }  
+    const allUsers = await Crud.get("users");
+    const totalCount = allUsers.length;
+
+    const paginatedUsers = await Crud.paginate("users", limit, offset);
+
+    res.status(200).json({
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+      data: paginatedUsers
+    });
+  } catch (err) {
+    console.log("Xato:", err);
+    next(err)
+  }
+};
+
+// UPDATE
+export const update = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const info = req.body
+    const response = await Crud.update(id, info, "users")
+
+    if (response == 404) {
+      return res.json({ message: "users not found" })
     }
-     if (fields.length === 0) {
-      return res.status(400).json({ message: "No valid fields to update" });
-    }  
-    values.push(id)
-    const updatedUser = await pool.query(`Update users SET ${fields.join(", ")} where id = $${idx} Returning *`, values)
-    res.send({message: "User succesfully updated", user: updatedUser.rows[0]})
-  }catch(err){
+    if (response == 400) {
+      return res.json({ message: "No valid fields to update" })
+    }
+    res.send({ message: "user succesfully updated", user: response.rows[0] })
+  } catch (err) {
     console.log("Xato:", err);
     next(err);
   }
 }
 
 
-export const deleteBoard = async(req, res, next) => {
-    try{
-        const {id} = req.params;
-    const boardCheck = await pool.query(`Select * from boards where id = $1;`, [id])
-     if(boardCheck.rows.length === 0){
-        return res.status(404).json({message: "board Not found"})
-     }
-     const deleted = await pool.query(`Delete from boards where id = $1;`, [id])
-     res.send({message: "Board deleted succesfully", deleted});
-    }catch(err){
-        console.log(err);
-        next(err);
+// DELETE
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const response = await Crud.delete(id, "users");
+
+    if (response == 404) {
+      return res.json({ message: "user not found" })
     }
+    res.send({ message: "User deleted succesfully", response });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
 }
 
+// SEARCH
+export const search = async (req, res, next) => {
+  try {
+    const queryKeys = Object.keys(req.query);
+    const queryValues = Object.values(req.query);
+
+    if (queryKeys.length === 0) {
+      return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
+    }
+    const result = await Crud.search(queryKeys, queryValues, "users")
+    res.send(result.rows);
+
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+}

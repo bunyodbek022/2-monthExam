@@ -1,14 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
-import {userRouter, boardRouter} from "./src/routes/index.js";
+import {userRouter, boardRouter, columnsRouter, tasksRouter} from "./src/routes/index.js";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.use("/user", userRouter);
+app.use("/users", userRouter);
 
-app.use("/board", boardRouter);
+app.use("/boards", boardRouter);
+
+app.use("/tasks", tasksRouter);
+
+app.use("/columns", columnsRouter);
+
+
 
 app.use((err, req, res, next) => {
   console.error("Global error handler:", err.message);
