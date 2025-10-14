@@ -1,22 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
-import {userRouter, boardRouter, columnsRouter, tasksRouter} from "./src/routes/index.js";
-
+import mainRouter from "./src/routes/main.router.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.use("/users", userRouter);
+app.use("/", mainRouter);
 
-app.use("/boards", boardRouter);
-
-app.use("/tasks", tasksRouter);
-
-app.use("/columns", columnsRouter);
-
-
-
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error("Global error handler:", err.message);
   res.status(500).send({ message: "Serverda xatolik yuz berdi" });
 })

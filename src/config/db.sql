@@ -8,9 +8,19 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL
 );
 
-
-
-
+-- INSERT INTO users (name, email, password)
+-- VALUES
+-- ('Ali Valiyev', 'ali@example.com', '12345'),
+-- ('Dilnoza Karimova', 'dilnoza@example.com', 'password123'),
+-- ('Jasur Bekov', 'jasur@example.com', 'qwerty'),
+-- ('Malika Rasulova', 'malika@example.com', 'malika2025'),
+-- ('Sherzod Akbarov', 'sherzod@example.com', 'sherzod!@#'),
+-- ('Nigora Rustamova', 'nigora@example.com', 'nigora789'),
+-- ('Bobur Tursunov', 'bobur@example.com', 'bobur654'),
+-- ('Gulnoza Saidova', 'gulnoza@example.com', 'gulnoza321'),
+-- ('Bekzod Olimov', 'bekzod@example.com', 'bekzod000'),
+-- ('Zarina Abdullaeva', 'zarina@example.com', 'zarina777');
+-- -- 
 
 CREATE TABLE boards (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
