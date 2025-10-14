@@ -1,4 +1,4 @@
-import { Crud } from "../helpers/CrudClass.js";
+import { baseClass } from "../helpers/baseClass.js";
 
 // CREATE
 export const createBoard = async (req, res, next) => {
@@ -9,7 +9,7 @@ export const createBoard = async (req, res, next) => {
       title,
       user_id
     }
-    const newBoard = await Crud.create(info, "boards");
+    const newBoard = await baseClass.create(info, "boards");
     res.status(201).json({
       message: "Board yaratildi",
       data: newBoard,
@@ -28,10 +28,10 @@ export const getAllBoard = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const allBoards = await Crud.get("boards");
+    const allBoards = await baseClass.get("boards");
     const totalCount = allBoards.length;
 
-    const paginatedBoards = await Crud.paginate("boards", limit, offset);
+    const paginatedBoards = await baseClass.paginate("boards", limit, offset);
 
     res.status(200).json({
       total: totalCount,
@@ -51,7 +51,7 @@ export const updateBoard = async (req, res, next) => {
   try {
     const { id } = req.params
     const info = req.body
-    const response = await Crud.update(id, info, "boards")
+    const response = await baseClass.update(id, info, "boards")
 
     if (response == 404) {
       return res.json({ message: "Boards not found" })
@@ -70,7 +70,7 @@ export const updateBoard = async (req, res, next) => {
 export const deleteBoard = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const response = await Crud.delete(id, "boards");
+    const response = await baseClass.delete(id, "boards");
 
     if (response == 404) {
       return res.json({ message: "Board not found" })
@@ -93,7 +93,7 @@ export const search = async (req, res, next) => {
     if (queryKeys.length === 0) {
       return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
     }
-    const result = await Crud.search(queryKeys, queryValues, "boards")
+    const result = await baseClass.search(queryKeys, queryValues, "boards")
     res.send(result.rows);
 
   } catch (error) {

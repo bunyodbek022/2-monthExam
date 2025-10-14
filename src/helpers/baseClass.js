@@ -1,6 +1,6 @@
 import pool from "../config/config.js";
 
-class CRUD {
+class BaseClass {
     // CREATE
     async create(info, tableName) {
         const keys = Object.keys(info);
@@ -69,5 +69,5 @@ class CRUD {
 
 
 
-export const Crud = new CRUD();
+export const baseClass = new BaseClass();
 
