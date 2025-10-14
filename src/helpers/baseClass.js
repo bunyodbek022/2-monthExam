@@ -29,9 +29,9 @@ class BaseClass {
             return 404  // not found
         }
         for (const [key, value] of Object.entries(info)) {
-                fields.push(`${key}=$${idx}`);
-                values.push(value);
-                idx++;
+            fields.push(`${key}=$${idx}`);
+            values.push(value);
+            idx++;
         }
         if (fields.length === 0) {
             return 400 //  message: "No valid fields to update"
@@ -51,7 +51,7 @@ class BaseClass {
         return deleted.rows[0];
     }
 
-    async search(queryKeys,queryValues, name ) {
+    async search(queryKeys, queryValues, name) {
         const conditions = queryKeys.map((key, i) => `${key} ILIKE $${i + 1}`);
         const sql = `SELECT * FROM ${name} WHERE ${conditions.join(" AND ")}`;
         const values = queryValues.map(value => `%${value}%`);
@@ -64,6 +64,13 @@ class BaseClass {
         const paginated = await pool.query(`Select * from ${tableName} order by id limit $1 offset $2`, [limit, offset]);
         return paginated.rows;
 
+    }
+
+    async checkId(tableName, id) {
+        const check = await pool.query(`Select * from ${tableName} where id=$1`, [id]);
+        if (check.rows.length === 0) {
+            return 404;
+        }
     }
 }
 
