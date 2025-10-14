@@ -9,6 +9,10 @@ export const createColumn = async (req, res, next) => {
       name,
       board_id
     }
+    const checkStatus = await baseClass.checkId("columns", board_id);
+    if (checkStatus === 404) {
+      res.status(404).send({message: "Board_id is not found"})
+    }
     const newColumn = await baseClass.create(info, "columns");
     res.status(201).json({
       message: "Column yaratildi",

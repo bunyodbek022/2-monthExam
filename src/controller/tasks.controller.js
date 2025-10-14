@@ -12,6 +12,18 @@ export const createTask = async (req, res, next) => {
             board_id,
             column_id
         }
+        const checkStatusUser = await baseClass.checkId("tasks", user_id);
+        if (checkStatusUser === 404) {
+            res.status(404).send({ message: "User_id is not found" })
+        };
+        const checkStatusBoard = await baseClass.checkId("tasks", board_id);
+        if (checkStatusBoard === 404) {
+            res.status(404).send({ message: "Board_id is not found" })
+        }
+        const checkStatusColumn = await baseClass.checkId("tasks", column_id);
+        if (checkStatusColumn === 404) {
+            res.status(404).send({ message: "Column_id is not found" })
+        }
         const newTask = await baseClass.create(info, "tasks");
         res.status(201).json({
             message: "Task yaratildi",
@@ -27,22 +39,22 @@ export const createTask = async (req, res, next) => {
 // GET_ALL
 export const getAllTask = async (req, res, next) => {
     try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
-    const allTasks = await baseClass.get("tasks");
-    const totalCount = allTasks.length;
+        const allTasks = await baseClass.get("tasks");
+        const totalCount = allTasks.length;
 
-    const paginatedTasks = await baseClass.paginate("tasks", limit, offset);
+        const paginatedTasks = await baseClass.paginate("tasks", limit, offset);
 
-    res.status(200).json({
-      total: totalCount,
-      page,
-      limit,
-      totalPages: Math.ceil(totalCount / limit),
-      data: paginatedTasks
-    });
+        res.status(200).json({
+            total: totalCount,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit),
+            data: paginatedTasks
+        });
     } catch (err) {
         console.log("Xato:", err);
         next(err)
