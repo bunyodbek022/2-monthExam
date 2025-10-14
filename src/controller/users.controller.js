@@ -1,5 +1,5 @@
 import pool from "../config/config.js";
-import { Crud } from "../helpers/CrudClass.js";
+import { baseClass } from "../helpers/baseClass.js";
 import bcrypt from "bcrypt";
 
 // CREATE
@@ -54,10 +54,10 @@ export const getAllUsers = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const allUsers = await Crud.get("users");
+    const allUsers = await baseClass.get("users");
     const totalCount = allUsers.length;
 
-    const paginatedUsers = await Crud.paginate("users", limit, offset);
+    const paginatedUsers = await baseClass.paginate("users", limit, offset);
 
     res.status(200).json({
       total: totalCount,
@@ -77,7 +77,7 @@ export const update = async (req, res, next) => {
   try {
     const { id } = req.params
     const info = req.body
-    const response = await Crud.update(id, info, "users")
+    const response = await baseClass.update(id, info, "users")
 
     if (response == 404) {
       return res.json({ message: "users not found" })
@@ -97,7 +97,7 @@ export const update = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const response = await Crud.delete(id, "users");
+    const response = await baseClass.delete(id, "users");
 
     if (response == 404) {
       return res.json({ message: "user not found" })
@@ -118,7 +118,7 @@ export const search = async (req, res, next) => {
     if (queryKeys.length === 0) {
       return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
     }
-    const result = await Crud.search(queryKeys, queryValues, "users")
+    const result = await baseClass.search(queryKeys, queryValues, "users")
     res.send(result.rows);
 
   } catch (error) {

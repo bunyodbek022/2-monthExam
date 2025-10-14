@@ -1,4 +1,4 @@
-import { Crud } from "../helpers/CrudClass.js";
+import { baseClass } from "../helpers/baseClass.js";
 
 // CREATE
 export const createTask = async (req, res, next) => {
@@ -12,7 +12,7 @@ export const createTask = async (req, res, next) => {
             board_id,
             column_id
         }
-        const newTask = await Crud.create(info, "tasks");
+        const newTask = await baseClass.create(info, "tasks");
         res.status(201).json({
             message: "Task yaratildi",
             data: newTask,
@@ -31,10 +31,10 @@ export const getAllTask = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const allTasks = await Crud.get("tasks");
+    const allTasks = await baseClass.get("tasks");
     const totalCount = allTasks.length;
 
-    const paginatedTasks = await Crud.paginate("tasks", limit, offset);
+    const paginatedTasks = await baseClass.paginate("tasks", limit, offset);
 
     res.status(200).json({
       total: totalCount,
@@ -54,7 +54,7 @@ export const updateTask = async (req, res, next) => {
     try {
         const { id } = req.params
         const info = req.body
-        const response = await Crud.update(id, info, "tasks")
+        const response = await baseClass.update(id, info, "tasks")
 
         if (response == 404) {
             return res.status(404).json({ message: "Task not found" })
@@ -73,7 +73,7 @@ export const updateTask = async (req, res, next) => {
 export const deleteTask = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const response = await Crud.delete(id, "tasks");
+        const response = await baseClass.delete(id, "tasks");
 
         if (response == 404) {
             return res.json({ message: "Task not found" })
@@ -96,7 +96,7 @@ export const search = async (req, res, next) => {
         if (queryKeys.length === 0) {
             return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
         }
-        const result = await Crud.search(queryKeys, queryValues, "tasks")
+        const result = await baseClass.search(queryKeys, queryValues, "tasks")
         res.send(result.rows);
 
     } catch (error) {
