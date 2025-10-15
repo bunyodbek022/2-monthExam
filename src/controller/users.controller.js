@@ -8,7 +8,7 @@ export const createUser = async (req, res, next) => {
     const { name, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const checkEmail = await pool.query(`Select * from users where email = $1`,[email]);
+    const checkEmail = await pool.query(`Select * from users where email = $1`, [email]);
     if (checkEmail.rows.length > 0) {
       res.status(409).send({ message: "User already exists" });
     }

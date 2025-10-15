@@ -11,7 +11,7 @@ export const createBoard = async (req, res, next) => {
     }
     const checkStatus = await baseClass.checkId("users", user_id);
     if (checkStatus === 404) {
-      res.status(404).send({message: "User_id is not found"})
+      res.status(404).send({ message: "User_id is not found" })
     }
     const newBoard = await baseClass.create(info, "boards");
     res.status(201).json({
@@ -50,6 +50,22 @@ export const getAllBoard = async (req, res, next) => {
   }
 };
 
+// GET_ONE
+export const getOneBoard = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const response = await baseClass.getOne("boards", id);
+    if (response === 404) {
+      res.status(404).send({ message: "Board not found" })
+    }
+    res.send({ Succesfully: response })
+  }
+  catch (err) {
+    console.log("GetOne xatolik :", err);
+    next(err)
+  }
+}
+
 // UPDATE
 export const updateBoard = async (req, res, next) => {
   try {
@@ -79,7 +95,7 @@ export const deleteBoard = async (req, res, next) => {
     if (response == 404) {
       return res.json({ message: "Board not found" })
     }
-    res.send({ message: "Board deleted succesfully", data: response.rows[0]});
+    res.send({ message: "Board deleted succesfully", data: response.rows[0] });
   } catch (err) {
     console.log(err);
     next(err);
