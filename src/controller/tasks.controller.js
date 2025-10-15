@@ -12,6 +12,17 @@ export const createTask = async (req, res, next) => {
             board_id,
             column_id
         }
+        const checkDublicate = await baseClass.isDoublicate("tasks", { title, user_id, board_id, column_id });
+        if (checkDublicate === 404) {
+            const newTask = await baseClass.create(info, "tasks");
+            return res.status(201).json({
+                message: "Task yaratildi",
+                data: newTask,
+            });
+        }
+        if (checkDublicate === 409) {
+            return res.status(409).send({ message: "This name is already used" });
+        }
         const checkStatusUser = await baseClass.checkId("users", user_id);
         if (checkStatusUser === 404) {
             return res.status(404).send({ message: "User_id is not found" })
