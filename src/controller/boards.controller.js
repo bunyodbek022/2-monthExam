@@ -13,6 +13,17 @@ export const createBoard = async (req, res, next) => {
     if (checkStatus === 404) {
       return res.status(404).send({ message: "User_id is not found" })
     }
+    const checkDublicate = await baseClass.isDoublicate("boards", { title, user_id });
+    if (checkDublicate === 404) {
+      const newBoard = await baseClass.create(info, "boards");
+      return res.status(201).json({
+        message: "Board yaratildi",
+        data: newBoard,
+      });
+    }
+    if (checkDublicate === 409) {
+      return res.status(409).send({ message: "This name is already used" });
+    }
     const newBoard = await baseClass.create(info, "boards");
     res.status(201).json({
       message: "Board yaratildi",
