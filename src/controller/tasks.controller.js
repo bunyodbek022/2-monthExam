@@ -61,6 +61,21 @@ export const getAllTask = async (req, res, next) => {
     }
 };
 
+// GET_ONE
+export const getOneTask = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const response = await baseClass.getOne("tasks", id);
+        if (response === 404) {
+            res.status(404).send({ message: "Task not found" })
+        }
+        res.send({ Succesfully: response })
+    }
+    catch (err) {
+        console.log("GetOne xatolik :", err);
+        next(err)
+    }
+}
 // UPDATE
 export const updateTask = async (req, res, next) => {
     try {

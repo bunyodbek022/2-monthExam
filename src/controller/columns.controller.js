@@ -11,7 +11,7 @@ export const createColumn = async (req, res, next) => {
     }
     const checkStatus = await baseClass.checkId("columns", board_id);
     if (checkStatus === 404) {
-      res.status(404).send({message: "Board_id is not found"})
+      res.status(404).send({ message: "Board_id is not found" })
     }
     const newColumn = await baseClass.create(info, "columns");
     res.status(201).json({
@@ -50,6 +50,22 @@ export const getAllColumn = async (req, res, next) => {
   }
 };
 
+// GET_ONE
+export const getOneColumn = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const response = await baseClass.getOne("columns", id);
+    if (response === 404) {
+      res.status(404).send({ message: "Column not found" })
+    }
+    res.send({ Succesfully: response })
+  }
+  catch (err) {
+    console.log("GetOne xatolik :", err);
+    next(err)
+  }
+}
+
 // UPDATE
 export const updateColumn = async (req, res, next) => {
   try {
@@ -79,7 +95,7 @@ export const deleteColumn = async (req, res, next) => {
     if (response == 404) {
       return res.status(404).json({ message: "Column not found" })
     }
-    res.send({ message: "Column deleted succesfully", data: response.rows[0]});
+    res.send({ message: "Column deleted succesfully", data: response.rows[0] });
   } catch (err) {
     console.log(err);
     next(err);
