@@ -9,15 +9,22 @@ export const createColumn = async (req, res, next) => {
       name,
       board_id
     }
-    const checkStatus = await baseClass.checkId("columns", board_id);
+    const checkStatus = await baseClass.checkId("boards", board_id);
     if (checkStatus === 404) {
-      res.status(404).send({ message: "Board_id is not found" })
+      return res.status(404).send({ message: "Board_id is not found" })
     }
-    const newColumn = await baseClass.create(info, "columns");
-    res.status(201).json({
+    const checkDublicate = await baseClass.isDoublicate("columns", { name, board_id });
+    if (checkDublicate === 404) {
+      const newColumn = await baseClass.create(info, "columns");
+    return res.status(201).json({
       message: "Column yaratildi",
       data: newColumn,
     });
+    }
+    if (checkDublicate === 409) {
+      return res.status(409).send({ message: "This name is already used" });
+    }
+    
   } catch (err) {
     console.log("Xato:", err);
     next(err)
@@ -95,7 +102,7 @@ export const deleteColumn = async (req, res, next) => {
     if (response == 404) {
       return res.status(404).json({ message: "Column not found" })
     }
-    res.send({ message: "Column deleted succesfully", data: response.rows[0] });
+    res.send({ message: "Column deleted succesfully", data: response});
   } catch (err) {
     console.log(err);
     next(err);

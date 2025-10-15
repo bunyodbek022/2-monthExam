@@ -12,20 +12,20 @@ export const createTask = async (req, res, next) => {
             board_id,
             column_id
         }
-        const checkStatusUser = await baseClass.checkId("tasks", user_id);
+        const checkStatusUser = await baseClass.checkId("users", user_id);
         if (checkStatusUser === 404) {
-            res.status(404).send({ message: "User_id is not found" })
+            return res.status(404).send({ message: "User_id is not found" })
         };
-        const checkStatusBoard = await baseClass.checkId("tasks", board_id);
+        const checkStatusBoard = await baseClass.checkId("boards", board_id);
         if (checkStatusBoard === 404) {
-            res.status(404).send({ message: "Board_id is not found" })
+            return res.status(404).send({ message: "Board_id is not found" })
         }
-        const checkStatusColumn = await baseClass.checkId("tasks", column_id);
+        const checkStatusColumn = await baseClass.checkId("columns", column_id);
         if (checkStatusColumn === 404) {
-            res.status(404).send({ message: "Column_id is not found" })
+            return res.status(404).send({ message: "Column_id is not found" })
         }
         const newTask = await baseClass.create(info, "tasks");
-        res.status(201).json({
+        return res.status(201).json({
             message: "Task yaratildi",
             data: newTask,
         });

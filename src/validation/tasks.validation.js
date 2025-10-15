@@ -5,7 +5,7 @@ export const tasksCreateSchema = Joi.object({
   description:  Joi.string().min(5).max(100).required(),
   user_id: Joi.string().required(),
   board_id: Joi.string().required(),
-  colums_id: Joi.string().required()
+  column_id: Joi.string().required()
   
 });
 
@@ -14,6 +14,6 @@ export const tasksUpdateSchema = Joi.object({
   description:  Joi.string().min(5).max(100),
   user_id: Joi.string().email(),
   board_id: Joi.string().min(6).max(20),
-  colums_id: Joi.string()
+  column_id: Joi.string()
 });
 
