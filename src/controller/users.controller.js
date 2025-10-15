@@ -59,15 +59,14 @@ export const getAllUsers = async (req, res, next) => {
 
     const allUsers = await baseClass.get("users");
     const totalCount = allUsers.length;
-
     const paginatedUsers = await baseClass.paginate("users", limit, offset);
-
+    const newPaginatedUsers = paginatedUsers.map(({ password, ...rest }) => rest);
     res.status(200).json({
       total: totalCount,
       page,
       limit,
       totalPages: Math.ceil(totalCount / limit),
-      data: paginatedUsers
+      data: newPaginatedUsers
     });
   } catch (err) {
     console.log("Xato:", err);
@@ -81,14 +80,15 @@ export const update = async (req, res, next) => {
     const { id } = req.params
     const info = req.body
     const response = await baseClass.update(id, info, "users")
-
     if (response == 404) {
       return res.json({ message: "users not found" })
     }
     if (response == 400) {
       return res.json({ message: "No valid fields to update" })
     }
-    res.send({ message: "user succesfully updated", user: response.rows[0] })
+    const { name, email } = response.rows[0];
+    const newRes = {id, name, email}
+    res.send({ message: "user succesfully updated", user: newRes })
   } catch (err) {
     console.log("Xato:", err);
     next(err);

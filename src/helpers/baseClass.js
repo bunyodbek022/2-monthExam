@@ -1,5 +1,5 @@
 import pool from "../config/config.js";
-
+import bcript from "bcrypt"
 class BaseClass {
     validateTableName(name) {
         if (!/^[a-z_]+$/i.test(name)) {
@@ -40,11 +40,16 @@ class BaseClass {
         let idx = 1
         const tableCheck = await pool.query(`Select * from ${tableName} where id = $1;`, [id])
         if (tableCheck.rows.length === 0) {
-            return 404  
+            return 404
         }
         for (const [key, value] of Object.entries(info)) {
             fields.push(`${key}=$${idx}`);
-            values.push(value);
+            if (key === "password") {
+                const hashedPassword = await bcript.hash(value, 10);
+                values.push(hashedPassword);
+            } else {
+                values.push(value);
+            }
             idx++;
         }
         if (fields.length === 0) {
@@ -87,8 +92,19 @@ class BaseClass {
         const check = await pool.query(`Select * from ${tableName} where id=$1`, [id]);
         return check.rows.length ? check.rows[0] : 404;
     }
-}
 
+    async isDoublicate(tableName, info) {
+        this.validateTableName(tableName);
+        const conditions = Object.keys(info).map((k, i) => `${k} = $${i + 1}`).join(" AND ");
+        const values = Object.values(info);
+        const result = await pool.query(`SELECT * FROM ${tableName} WHERE ${conditions}`, values);
+
+        if (result.rows.length === 0) {
+            return 404;
+        }
+        return 409;
+    }
+}
 
 
 export const baseClass = new BaseClass();

@@ -11,7 +11,7 @@ export const createBoard = async (req, res, next) => {
     }
     const checkStatus = await baseClass.checkId("users", user_id);
     if (checkStatus === 404) {
-      res.status(404).send({ message: "User_id is not found" })
+      return res.status(404).send({ message: "User_id is not found" })
     }
     const newBoard = await baseClass.create(info, "boards");
     res.status(201).json({
