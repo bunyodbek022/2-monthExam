@@ -85,7 +85,7 @@ export const getOneUser = async (req, res, next) => {
       if (response === 400) {
           return res.status(400).send({message: "UUID xato kiritldi"})
       }
-      delete response.password;
+      delete response.password
         res.send({ Succesfully: response })
     }
     catch (err) {
