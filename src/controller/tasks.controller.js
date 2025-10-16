@@ -50,26 +50,26 @@ export const createTask = async (req, res, next) => {
 // GET_ALL
 export const getAllTask = async (req, res, next) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const offset = (page - 1) * limit;
+  const { limit, page, search } = req.query;
+  const lim = limit ? parseInt(limit, 10) : 10;
+  const pa = page ? parseInt(page, 10) : 1;
+  const off = (pa - 1) * lim;
 
-        const allTasks = await baseClass.get("tasks");
-        const totalCount = allTasks.length;
+  const result = await baseClass.searchAndPaginate(search, "tasks", lim, off);
 
-        const paginatedTasks = await baseClass.paginate("tasks", limit, offset);
+  const newResult = result.map(({ password, ...rest }) => rest);
 
-        res.status(200).json({
-            total: totalCount,
-            page,
-            limit,
-            totalPages: Math.ceil(totalCount / limit),
-            data: paginatedTasks
-        });
-    } catch (err) {
-        console.log("Xato:", err);
-        next(err)
-    }
+  res.status(200).json({
+    success: true,
+    page: pa,
+    limit: lim,
+    data: newResult,
+  });
+} catch (err) {
+  console.error("Xato:", err);
+  next(err);
+}
+
 };
 
 // GET_ONE
@@ -116,29 +116,10 @@ export const deleteTask = async (req, res, next) => {
         if (response == 404) {
             return res.json({ message: "Task not found" })
         }
-        res.send({ message: "Task deleted succesfully", data: response.rows[0] });
+        res.send({ message: "Task deleted succesfully", data: response });
     } catch (err) {
         console.log(err);
         next(err);
     }
 }
 
-
-
-// Search 
-export const search = async (req, res, next) => {
-    try {
-        const queryKeys = Object.keys(req.query);
-        const queryValues = Object.values(req.query);
-
-        if (queryKeys.length === 0) {
-            return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
-        }
-        const result = await baseClass.search(queryKeys, queryValues, "tasks")
-        res.send(result.rows);
-
-    } catch (error) {
-        console.log(error);
-        next(error)
-    }
-}
