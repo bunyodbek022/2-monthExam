@@ -51,6 +51,11 @@ class BaseClass {
             if (key === "password") {
                 const hashedPassword = await bcript.hash(value, 10);
                 values.push(hashedPassword);
+            } else if(key === "email") {
+                const result = await pool.query(`SELECT * FROM ${tableName} WHERE email=$1`, [value]);
+                if (result.rows.length > 0) {
+                    return 409
+                }
             } else {
                 values.push(value);
             }
@@ -90,7 +95,7 @@ class BaseClass {
             sql += ` WHERE ${conditions.join(" OR ")}`;
             values.push(`%${searchQuery}%`);
         }
-        
+
          if (limit) {
             sql += ` LIMIT $${values.length + 1}`;
             values.push(parseInt(limit, 10));
