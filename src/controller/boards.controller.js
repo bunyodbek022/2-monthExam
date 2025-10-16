@@ -39,26 +39,26 @@ export const createBoard = async (req, res, next) => {
 // GET_ALL
 export const getAllBoard = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+  const { limit, page, search } = req.query;
+  const lim = limit ? parseInt(limit, 10) : 10;
+  const pa = page ? parseInt(page, 10) : 1;
+  const off = (pa - 1) * lim;
 
-    const allBoards = await baseClass.get("boards");
-    const totalCount = allBoards.length;
+  const result = await baseClass.searchAndPaginate(search, "boards", lim, off);
 
-    const paginatedBoards = await baseClass.paginate("boards", limit, offset);
+  const newResult = result.map(({ password, ...rest }) => rest);
 
-    res.status(200).json({
-      total: totalCount,
-      page,
-      limit,
-      totalPages: Math.ceil(totalCount / limit),
-      data: paginatedBoards
-    });
-  } catch (err) {
-    console.log("Xato:", err);
-    next(err)
-  }
+  res.status(200).json({
+    success: true,
+    page: pa,
+    limit: lim,
+    data: newResult,
+  });
+} catch (err) {
+  console.error("Xato:", err);
+  next(err);
+}
+
 };
 
 // GET_ONE
@@ -118,17 +118,28 @@ export const deleteBoard = async (req, res, next) => {
 // Search 
 export const search = async (req, res, next) => {
   try {
-    const queryKeys = Object.keys(req.query);
-    const queryValues = Object.values(req.query);
+    const { limit, offset, ...filters } = req.query; 
 
-    if (queryKeys.length === 0) {
-      return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
-    }
-    const result = await baseClass.search(queryKeys, queryValues, "boards")
-    res.send(result.rows);
+    const queryKeys = Object.keys(filters);     
+    const queryValues = Object.values(filters); 
 
+    const lim = limit ? parseInt(limit, 10) : undefined;
+    const off = offset ? parseInt(offset, 10) : undefined;
+
+    const result = await baseClass.searchAndPaginate(
+      queryKeys,
+      queryValues,
+      "boards",
+      lim,
+      off
+    );
+
+    res.status(200).json({
+      success: true,
+      total: result.length,
+      data: result,
+    });
   } catch (error) {
-    console.log(error);
-    next(error)
+    next(error);
   }
-}
+};

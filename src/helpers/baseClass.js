@@ -26,7 +26,7 @@ class BaseClass {
         const result = await pool.query(`SELECT * FROM ${tableName}`);
         return result.rows;
     }
-
+    // GET_ONE
     async getOne(tableName, id) {
         this.validateTableName(tableName);
         const result = await pool.query(`Select * from ${tableName} where id = $1`, [id]);
@@ -70,22 +70,38 @@ class BaseClass {
         const deleted = await pool.query(`Delete from ${tableName} where id = $1 RETURNING *;`, [id])
         return deleted.rows[0];
     }
-    // Search
-    async search(queryKeys, queryValues, name) {
-        const conditions = queryKeys.map((key, i) => `${key} ILIKE $${i + 1}`);
-        const sql = `SELECT * FROM ${name} WHERE ${conditions.join(" AND ")}`;
-        const values = queryValues.map(value => `%${value}%`);
-        const result = await pool.query(sql, values);
-        return result;
-
-    }
-    // Paginate
-    async paginate(tableName, limit, offset) {
+    // Search and paginate
+    async searchAndPaginate(searchQuery, tableName, limit, offset) {
         this.validateTableName(tableName);
-        const paginated = await pool.query(`Select * from ${tableName} order by id limit $1 offset $2`, [limit, offset]);
-        return paginated.rows;
+        const { rows: columns } = await pool.query(`
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = $1
+  `, [tableName]);
+        const conditions = columns.map(c => `${c.column_name}::text ILIKE $1`);
+        let sql = `SELECT * FROM ${tableName}`;
 
+        const values = [];
+        if (searchQuery) {
+            sql += ` WHERE ${conditions.join(" OR ")}`;
+            values.push(`%${searchQuery}%`);
+        }
+
+        sql += ` ORDER BY id`;
+        if (limit) {
+            sql += ` LIMIT $${values.length + 1}`;
+            values.push(parseInt(limit, 10));
+        }
+
+        if (offset) {
+            sql += ` OFFSET $${values.length + 1}`;
+            values.push(parseInt(offset, 10));
+        }
+
+        const result = await pool.query(sql, values);
+        return result.rows;
     }
+
 
     async checkId(tableName, id) {
         this.validateTableName(tableName);
@@ -95,8 +111,8 @@ class BaseClass {
 
     async isDoublicate(tableName, info) {
         this.validateTableName(tableName);
-        const conditions = Object.keys(info).map((k, i) => `${k} = $${i + 1}`).join(" AND ");
-        const values = Object.values(info);
+        const conditions = Object.keys(info).map((k, i) => `LOWER(${k}::text) = LOWER($${i + 1}::text)`).join(" AND ");
+        const values = Object.values(info).map(v => String(v).trim());
         const result = await pool.query(`SELECT * FROM ${tableName} WHERE ${conditions}`, values);
 
         if (result.rows.length === 0) {

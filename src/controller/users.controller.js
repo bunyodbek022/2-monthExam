@@ -10,15 +10,16 @@ export const createUser = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const checkEmail = await pool.query(`Select * from users where email = $1`, [email]);
     if (checkEmail.rows.length > 0) {
-      res.status(409).send({ message: "User already exists" });
+      return res.status(409).send({ message: "User already exists" });
     }
-    await pool.query(
-      `INSERT INTO users(name, email, password) VALUES ($1, $2, $3)`,
+    const result = await pool.query(
+      `INSERT INTO users(name, email, password) VALUES ($1, $2, $3) Returning *`,
       [name, email, hashedPassword]
     );
-
+    const newResult = result.rows[0]
+    delete newResult.password
     console.log("Foydalanuvchi yaratildi:", name, email);
-    return res.status(201).send({ message: "User yaratildi" });
+    return res.status(201).send({ message: "User yaratildi", user: newResult});
   } catch (err) {
     console.log("Xato:", err);
     next(err)
@@ -53,26 +54,41 @@ export const login = async (req, res, next) => {
 //GET ALL USERS
 export const getAllUsers = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+  const { limit, page, search } = req.query;
+  const lim = limit ? parseInt(limit, 10) : 10;
+  const pa = page ? parseInt(page, 10) : 1;
+  const off = (pa - 1) * lim;
 
-    const allUsers = await baseClass.get("users");
-    const totalCount = allUsers.length;
-    const paginatedUsers = await baseClass.paginate("users", limit, offset);
-    const newPaginatedUsers = paginatedUsers.map(({ password, ...rest }) => rest);
-    res.status(200).json({
-      total: totalCount,
-      page,
-      limit,
-      totalPages: Math.ceil(totalCount / limit),
-      data: newPaginatedUsers
-    });
-  } catch (err) {
-    console.log("Xato:", err);
-    next(err)
-  }
+  const result = await baseClass.searchAndPaginate(search, "users", lim, off);
+
+  const newResult = result.map(({ password, ...rest }) => rest);
+
+  res.status(200).json({
+    success: true,
+    page: pa,
+    limit: lim,
+    data: newResult,
+  });
+} catch (err) {
+  console.error("Xato:", err);
+  next(err);
+}
 };
+
+export const getOneUser = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const response = await baseClass.getOne("users", id);
+        if (response === 404) {
+            res.status(404).send({ message: "User not found" })
+        }
+        res.send({ Succesfully: response })
+    }
+    catch (err) {
+        console.log("GetOne xatolik :", err);
+        next(err)
+    }
+}
 
 // UPDATE
 export const update = async (req, res, next) => {
@@ -101,6 +117,7 @@ export const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
     const response = await baseClass.delete(id, "users");
+    delete response.password
 
     if (response == 404) {
       return res.json({ message: "user not found" })
@@ -112,20 +129,3 @@ export const deleteUser = async (req, res, next) => {
   }
 }
 
-// SEARCH
-export const search = async (req, res, next) => {
-  try {
-    const queryKeys = Object.keys(req.query);
-    const queryValues = Object.values(req.query);
-
-    if (queryKeys.length === 0) {
-      return res.status(400).json({ message: "Hech qanday qidiruv parametri yuborilmadi" });
-    }
-    const result = await baseClass.search(queryKeys, queryValues, "users")
-    res.send(result.rows);
-
-  } catch (error) {
-    console.log(error);
-    next(error)
-  }
-}

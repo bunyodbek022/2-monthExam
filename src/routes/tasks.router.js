@@ -1,11 +1,9 @@
 import { Router } from "express";
 import { tasksCreateSchema, tasksUpdateSchema } from "../validation/tasks.validation.js"
 import { validate } from "../validation/validation.js";
-import { search, createTask, getAllTask,getOneTask,  updateTask, deleteTask } from "../controller/tasks.controller.js";
+import {createTask, getAllTask,getOneTask,  updateTask, deleteTask } from "../controller/tasks.controller.js";
 const tasksRouter = Router()
 
-//SEARCH
-tasksRouter.get("/search", search);
 //CREATE
 tasksRouter.post("/", validate(tasksCreateSchema, "body"), createTask);
 //GET_ONE
