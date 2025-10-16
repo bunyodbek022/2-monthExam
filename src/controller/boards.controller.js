@@ -106,7 +106,7 @@ export const deleteBoard = async (req, res, next) => {
     if (response == 404) {
       return res.json({ message: "Board not found" })
     }
-    res.send({ message: "Board deleted succesfully", data: response.rows[0] });
+    res.send({ message: "Board deleted succesfully", data: response});
   } catch (err) {
     console.log(err);
     next(err);
