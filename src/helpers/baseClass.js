@@ -1,5 +1,6 @@
 import pool from "../config/config.js";
 import bcript from "bcrypt"
+import validator from "validator"
 class BaseClass {
     validateTableName(name) {
         if (!/^[a-z_]+$/i.test(name)) {
@@ -29,6 +30,9 @@ class BaseClass {
     // GET_ONE
     async getOne(tableName, id) {
         this.validateTableName(tableName);
+        if (!validator.isUUID(id)) {
+            return 400
+        }
         const result = await pool.query(`Select * from ${tableName} where id = $1`, [id]);
         return result.rows.length ? result.rows[0] : 404;
     }

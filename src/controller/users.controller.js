@@ -80,7 +80,10 @@ export const getOneUser = async (req, res, next) => {
         const { id } = req.params
         const response = await baseClass.getOne("users", id);
         if (response === 404) {
-            res.status(404).send({ message: "User not found" })
+            return res.status(404).send({ message: "User not found" })
+        }
+      if (response === 400) {
+          return res.status(400).send({message: "UUID xato kiritldi"})
         }
         res.send({ Succesfully: response })
     }
