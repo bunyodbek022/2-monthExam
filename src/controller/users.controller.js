@@ -106,6 +106,9 @@ export const update = async (req, res, next) => {
     if (response == 400) {
       return res.json({ message: "No valid fields to update" })
     }
+    if (response == 409) {
+      return res.json({ message: "Email already exist" })
+    }
     const { name, email } = response.rows[0];
     const newRes = {id, name, email}
     res.send({ message: "user succesfully updated", user: newRes })
