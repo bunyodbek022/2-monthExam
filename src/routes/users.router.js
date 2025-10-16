@@ -13,7 +13,7 @@ userRouter.post("/register", validate(userCreateSchema, "body"), createUser);
 //LOGIN
 userRouter.post("/login", login);
 // UPDATE
-userRouter.put("/update/:id", validate(userUpdateSchema, "body"), update);
+userRouter.put("/:id", validate(userUpdateSchema, "body"), update);
 // DELETE 
 userRouter.delete("/:id", deleteUser);
 
