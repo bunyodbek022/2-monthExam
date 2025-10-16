@@ -90,9 +90,8 @@ class BaseClass {
             sql += ` WHERE ${conditions.join(" OR ")}`;
             values.push(`%${searchQuery}%`);
         }
-
-        sql += ` ORDER BY id`;
-        if (limit) {
+        
+         if (limit) {
             sql += ` LIMIT $${values.length + 1}`;
             values.push(parseInt(limit, 10));
         }
